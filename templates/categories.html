@@ -1,0 +1,32 @@
+ {% extends 'base.html' %}
+{% block content %}
+    <h1>📂 Категории</h1>
+
+    <form method="post" class="add-form">
+        <div class="form-group">
+            <input type="text" name="name" placeholder="Новая категория" required>
+            <button type="submit">➕ Добавить</button>
+        </div>
+    </form>
+
+    <ul style="list-style: none; padding: 0;">
+        {% for cat in categories %}
+            <li style="background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+                <span>📁 {{ cat.name }}</span>
+                <form action="{{ url_for('delete_category', category_id=cat.id) }}" method="post" style="display:inline; margin: 0;">
+                    <button type="submit" onclick="return confirm('Удалить эту категорию?')" style="background: #dc3545;">
+                        🗑️ Удалить
+                    </button>
+                </form>
+            </li>
+        {% else %}
+            <li style="text-align: center; color: #666; padding: 20px;">
+                📭 Пока нет категорий
+            </li>
+        {% endfor %}
+    </ul>
+
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('index') }}">← Назад к задачам</a>
+    </div>
+{% endblock %}

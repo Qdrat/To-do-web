@@ -1,0 +1,88 @@
+ {% extends "base.html" %}
+
+{% block content %}
+    <h1>📝 Менеджер задач</h1>
+
+    <!-- Форма фильтрации -->
+    <form class="filter-form" method="get">
+        <div class="form-group">
+            <input type="text" name="search" placeholder="Поиск задач..." value="{{ request.args.get('search', '') }}">
+            <select name="category">
+                <option value="">Все категории</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if request.args.get('category', type=int) == cat.id %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <select name="priority">
+                <option value="">Все приоритеты</option>
+                {% for p in ['High','Medium','Low'] %}
+                    <option value="{{ p }}" {% if request.args.get('priority') == p %}selected{% endif %}>
+                        {{ p }}
+                    </option>
+                {% endfor %}
+            </select>
+            <select name="show_completed">
+                <option value="all" {% if request.args.get('show_completed','all')=='all' %}selected{% endif %}>Все задачи</option>
+                <option value="active" {% if request.args.get('show_completed')=='active' %}selected{% endif %}>Только активные</option>
+                <option value="completed" {% if request.args.get('show_completed')=='completed' %}selected{% endif %}>Только выполненные</option>
+            </select>
+        </div>
+        <button type="submit">🔍 Применить фильтры</button>
+        <a href="{{ url_for('index') }}" style="margin-left: 10px;">🔄 Сбросить</a>
+    </form>
+
+    <!-- Форма добавления новой задачи -->
+    <form class="add-form" method="post">
+        <input type="hidden" name="add_task" value="1">
+        <div class="form-group">
+            <input type="text" name="title" placeholder="Название задачи" required>
+            <select name="priority">
+                {% for p in ['High','Medium','Low'] %}
+                    <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+            </select>
+            <select name="category_id">
+                <option value="None">Без категории</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="description" placeholder="Описание задачи">
+        </div>
+        <button type="submit">➕ Добавить задачу</button>
+    </form>
+
+    <!-- Ссылка на управление категориями -->
+    <a href="{{ url_for('categories') }}">📂 Управление категориями</a>
+
+    <hr>
+
+    <!-- Список задач -->
+    {% for task in tasks %}
+        <div class="task {% if task.completed %}completed{% endif %}">
+            <span class="priority-{{ task.priority }}">[{{ task.priority }}]</span>
+            <strong>{{ task.title }}</strong>
+            {% if task.category %}
+                <span class="category">({{ task.category.name }})</span>
+            {% endif %}
+            {% if task.description %}
+                <div>{{ task.description }}</div>
+            {% endif %}
+            <div class="actions">
+                <a href="{{ url_for('edit_task', task_id=task.id) }}">✏️ Редактировать</a>
+                <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Удалить эту задачу?')">🗑️ Удалить</button>
+                </form>
+                <form action="{{ url_for('toggle_complete', task_id=task.id) }}" method="post" style="display:inline;">
+                    <button type="submit">
+                        {% if task.completed %}✅ Вернуть в работу{% else %}☑️ Выполнить{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <p>📭 Задачи не найдены.</p>
+    {% endfor %}
+{% endblock %}
